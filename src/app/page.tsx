@@ -12,6 +12,22 @@ export default function Home() {
         Console d&apos;administration &amp; API de synchronisation des cantiques.
       </p>
 
+      <a
+        href="/admin"
+        style={{
+          display: 'inline-block',
+          background: 'var(--bordeaux)',
+          color: '#fff',
+          textDecoration: 'none',
+          fontWeight: 600,
+          padding: '10px 18px',
+          borderRadius: 8,
+          marginTop: 16,
+        }}
+      >
+        Accéder à l&apos;administration →
+      </a>
+
       <section
         style={{
           background: 'var(--card)',
@@ -21,13 +37,13 @@ export default function Home() {
           marginTop: 24,
         }}
       >
-        <h2 style={{ marginTop: 0, fontSize: 18 }}>État — Phase 1 (scaffold)</h2>
+        <h2 style={{ marginTop: 0, fontSize: 18 }}>État</h2>
         <ul style={{ color: 'var(--muted)' }}>
           <li>Structure Next.js + TypeScript ✅</li>
           <li>Schéma Prisma (Supabase / PostgreSQL) ✅</li>
           <li>Routes API de synchro &amp; admin ✅</li>
-          <li>Connexion Supabase &amp; seed des données → à venir (clés requises)</li>
-          <li>UI admin (CRUD) → Phase 3</li>
+          <li>UI admin (login, CRUD cantiques &amp; collections, backup) ✅</li>
+          <li>Connexion Supabase &amp; seed des données → à venir (mot de passe DB requis)</li>
         </ul>
       </section>
 

@@ -50,12 +50,23 @@ Voir `.env.example`. À configurer aussi dans le dashboard Render.
 Le fichier `render.yaml` décrit le service. Build : `npm install && npm run build`.
 Start : `npm run start`. Renseigner les variables d'environnement Supabase dans Render.
 
+## Console d'administration
+
+- `/admin/login` — connexion (mot de passe = `ADMIN_TOKEN`)
+- `/admin` — tableau de bord (compteurs, version des données, backup)
+- `/admin/hymns` — liste, recherche, filtre par collection, suppression
+- `/admin/hymns/new` · `/admin/hymns/[id]` — formulaire (versets dynamiques + audio)
+- `/admin/collections` — CRUD des collections
+
+Le middleware protège `/admin/*` (cookie de session `admin_session`, httpOnly).
+Les routes `/api/admin/*` valident le cookie **ou** un en-tête `Authorization: Bearer <ADMIN_TOKEN>`.
+
 ## Phases du projet
 
-1. ✅ Scaffold (structure, schéma, routes API) — **actuel**
-2. Seed Supabase depuis les données mobile
-3. UI admin (CRUD) + vraie auth
-4. API de synchro finalisée + export backup
+1. ✅ Scaffold (structure, schéma, routes API)
+2. Seed Supabase depuis les données mobile *(en attente du mot de passe DB)*
+3. ✅ UI admin (login + CRUD cantiques/collections + backup) — **actuel**
+4. API de synchro finalisée + export backup *(API en place)*
 5. Déploiement Render
 6. Refactor mobile (seed + NetInfo + synchro delta, retrait de l'admin)
 7. Mise à jour app (expo-updates OTA + lien store)
