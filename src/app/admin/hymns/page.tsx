@@ -12,6 +12,7 @@ export default function HymnsListPage() {
   const [colFilter, setColFilter] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState<Hymn | null>(null);
 
   async function load() {
     setLoading(true);
@@ -68,12 +69,13 @@ export default function HymnsListPage() {
   }, [filtered, collections]);
 
   async function remove(h: Hymn) {
-    if (!confirm(`Supprimer « ${h.titre} » (n°${h.numero}) ?`)) return;
+    setConfirmDelete(null);
+    setError('');
     try {
       await api.del(`/api/admin/hymns?id=${encodeURIComponent(h.id)}`);
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Échec de la suppression');
+      setError(e instanceof Error ? e.message : 'Échec de la suppression');
     }
   }
 
@@ -234,20 +236,55 @@ export default function HymnsListPage() {
                     >
                       Éditer
                     </Link>
-                    <button
-                      onClick={() => remove(h)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--bordeaux)',
-                        fontWeight: 600,
-                        fontSize: 13,
-                        cursor: 'pointer',
-                        padding: '6px 4px',
-                      }}
-                    >
-                      Suppr.
-                    </button>
+                    {confirmDelete?.id === h.id ? (
+                      <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <button
+                          onClick={() => remove(h)}
+                          style={{
+                            background: '#b00020',
+                            border: 'none',
+                            color: '#fff',
+                            fontWeight: 600,
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            padding: '5px 10px',
+                            borderRadius: 6,
+                          }}
+                        >
+                          Confirmer
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(null)}
+                          style={{
+                            background: 'none',
+                            border: '1px solid var(--border)',
+                            color: 'var(--muted)',
+                            fontWeight: 600,
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            padding: '5px 8px',
+                            borderRadius: 6,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDelete(h)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--bordeaux)',
+                          fontWeight: 600,
+                          fontSize: 13,
+                          cursor: 'pointer',
+                          padding: '6px 4px',
+                        }}
+                      >
+                        Suppr.
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
