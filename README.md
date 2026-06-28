@@ -2,6 +2,8 @@
 
 Console d'administration et **API de synchronisation** des cantiques pour l'application mobile **Hymnes & Louanges**.
 
+🌐 **En production** : https://hymes-web.onrender.com
+
 - **Stack** : Next.js (App Router) + TypeScript
 - **Base de données** : Supabase (PostgreSQL) via Prisma + Supabase Storage (audio, à venir)
 - **Hébergement** : Render
@@ -67,7 +69,7 @@ Les routes `/api/admin/*` valident le cookie **ou** un en-tête `Authorization: 
 2. ✅ Seed Supabase (40 cantiques, 4 collections) + synchro testée
 3. ✅ UI admin (login + CRUD cantiques/collections + backup)
 4. ✅ API de synchro + export backup (en place et testée)
-5. Déploiement Render — **prochaine étape**
-6. Refactor mobile (seed + NetInfo + synchro delta, retrait de l'admin)
+5. ✅ Déployé sur Render (https://hymes-web.onrender.com) et vérifié en live
+6. Refactor mobile (seed + NetInfo + synchro delta, retrait de l'admin) — **prochaine étape**
 7. Mise à jour app (expo-updates OTA + lien store)
 8. Audio (Supabase Storage + offline)
