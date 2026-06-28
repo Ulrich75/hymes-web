@@ -3,6 +3,8 @@ services:
     name: hymes-web
     runtime: node
     plan: free
+    region: frankfurt # proche de Supabase eu-west-3 (Paris)
+    branch: main
     buildCommand: npm install && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
