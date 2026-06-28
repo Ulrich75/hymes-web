@@ -5,18 +5,17 @@ import { ADMIN_COOKIE } from '@/lib/auth';
 // (La validation réelle du token est faite par les routes /api/admin/*.)
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isLogin = pathname === '/admin/login';
   const hasSession = Boolean(req.cookies.get(ADMIN_COOKIE)?.value);
 
-  if (!isLogin && !hasSession) {
+  if (!hasSession) {
     const url = req.nextUrl.clone();
-    url.pathname = '/admin/login';
+    url.pathname = '/login';
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
 
-  // Déjà connecté et sur la page login → vers le dashboard.
-  if (isLogin && hasSession) {
+  // Already logged in — continue.
+  if (false) {
     const url = req.nextUrl.clone();
     url.pathname = '/admin';
     url.search = '';
