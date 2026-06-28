@@ -56,17 +56,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 });
   }
   const h = parsed.data;
-  const created = await prisma.hymn.create({
-    data: {
-      id: h.id,
-      numero: h.numero,
-      titre: h.titre,
-      collectionId: h.collection_id,
-      auteur: h.auteur ?? null,
-      versets: h.versets,
-      audio: h.audio ?? undefined,
-    },
-  });
+  let created;
+  try {
+    created = await prisma.hymn.create({
+      data: {
+        id: h.id,
+        numero: h.numero,
+        titre: h.titre,
+        collectionId: h.collection_id,
+        auteur: h.auteur ?? null,
+        versets: h.versets,
+        audio: h.audio ?? undefined,
+      },
+    });
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === 'P2002') {
+      return NextResponse.json({ error: `Un cantique avec l'identifiant « ${h.id} » existe déjà.` }, { status: 409 });
+    }
+    throw e;
+  }
   await bumpDataVersion();
   return NextResponse.json(toHymn(created), { status: 201 });
 }
