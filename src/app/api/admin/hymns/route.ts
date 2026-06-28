@@ -44,7 +44,7 @@ function unauthorized() {
 // GET /api/admin/hymns — liste complète (admin, inclut les soft-deletes)
 export async function GET(req: NextRequest) {
   if (!isAdminRequest(req)) return unauthorized();
-  const rows = await prisma.hymn.findMany({ orderBy: [{ collectionId: 'asc' }, { numero: 'asc' }] });
+  const rows = await prisma.hymn.findMany({ where: { deletedAt: null }, orderBy: [{ collectionId: 'asc' }, { numero: 'asc' }] });
   return NextResponse.json(rows.map(toHymn));
 }
 
