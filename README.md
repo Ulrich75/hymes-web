@@ -37,7 +37,7 @@ les cantiques au 1er lancement puis se synchronise (delta) quand une connexion e
 cp .env.example .env        # puis renseigner les valeurs Supabase
 npm install
 npm run db:push             # crée les tables dans Supabase
-npm run db:seed             # importe les ~112 cantiques depuis ../HYMNES-/src/data
+npm run db:seed             # importe les 40 cantiques depuis ../HYMNES-/src/data
 npm run dev                 # http://localhost:3000
 ```
 
@@ -64,10 +64,10 @@ Les routes `/api/admin/*` valident le cookie **ou** un en-tête `Authorization: 
 ## Phases du projet
 
 1. ✅ Scaffold (structure, schéma, routes API)
-2. Seed Supabase depuis les données mobile *(en attente du mot de passe DB)*
-3. ✅ UI admin (login + CRUD cantiques/collections + backup) — **actuel**
-4. API de synchro finalisée + export backup *(API en place)*
-5. Déploiement Render
+2. ✅ Seed Supabase (40 cantiques, 4 collections) + synchro testée
+3. ✅ UI admin (login + CRUD cantiques/collections + backup)
+4. ✅ API de synchro + export backup (en place et testée)
+5. Déploiement Render — **prochaine étape**
 6. Refactor mobile (seed + NetInfo + synchro delta, retrait de l'admin)
 7. Mise à jour app (expo-updates OTA + lien store)
 8. Audio (Supabase Storage + offline)
