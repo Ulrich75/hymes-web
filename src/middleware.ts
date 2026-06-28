@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE } from '@/lib/auth';
 
-// Protège les pages /admin/* : redirige vers /admin/login si pas de session.
+// Protège les pages /admin/* : redirige vers /login si pas de session.
 // (La validation réelle du token est faite par les routes /api/admin/*.)
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -11,14 +11,6 @@ export function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // Already logged in — continue.
-  if (false) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/admin';
-    url.search = '';
     return NextResponse.redirect(url);
   }
 

@@ -1,18 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
 
 export default function AdminHeader() {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  // Pas d'en-tête sur la page de connexion.
-  if (pathname === '/admin/login') return null;
-
   async function logout() {
     await fetch('/api/admin/logout', { method: 'POST' });
-    router.replace('/admin/login');
+    // Navigation « dure » pour repartir d'un état propre (cookie supprimé).
+    window.location.assign('/login');
   }
 
   return (
