@@ -54,14 +54,16 @@ Start : `npm run start`. Renseigner les variables d'environnement Supabase dans 
 
 ## Console d'administration
 
-- `/admin/login` — connexion (mot de passe = `ADMIN_TOKEN`)
+- `/login` — connexion (mot de passe = `ADMIN_PASSWORD`)
 - `/admin` — tableau de bord (compteurs, version des données, backup)
 - `/admin/hymns` — liste, recherche, filtre par collection, suppression
 - `/admin/hymns/new` · `/admin/hymns/[id]` — formulaire (versets dynamiques + audio)
 - `/admin/collections` — CRUD des collections
 
 Le middleware protège `/admin/*` (cookie de session `admin_session`, httpOnly).
-Les routes `/api/admin/*` valident le cookie **ou** un en-tête `Authorization: Bearer <ADMIN_TOKEN>`.
+Le login web utilise `ADMIN_PASSWORD` ; le cookie porte `ADMIN_TOKEN`.
+Les routes `/api/admin/*` valident le cookie **ou** un en-tête `Authorization: Bearer <ADMIN_TOKEN>`
+(ce dernier réservé au mobile/scripts).
 
 ## Phases du projet
 

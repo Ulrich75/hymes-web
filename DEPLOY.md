@@ -22,7 +22,8 @@ Les variables marquées `sync: false` doivent être saisies manuellement
 | `SUPABASE_SERVICE_ROLE_KEY` | `.env` (secret) |
 | `DATABASE_URL` | `.env` (pooler, port 6543, `?pgbouncer=true`) |
 | `DIRECT_URL` | `.env` (direct, port 5432) |
-| `ADMIN_TOKEN` | `.env` (secret) |
+| `ADMIN_PASSWORD` | `.env` (mot de passe du login web) |
+| `ADMIN_TOKEN` | `.env` (jeton Bearer API, secret) |
 
 > `NODE_VERSION` est déjà fixé dans `render.yaml`.
 
@@ -36,7 +37,7 @@ Les variables marquées `sync: false` doivent être saisies manuellement
 ```
 GET https://<app>.onrender.com/api/health
 GET https://<app>.onrender.com/api/sync/manifest   # 40 hymns / 4 collections
-https://<app>.onrender.com/admin/login             # mot de passe = ADMIN_TOKEN
+https://<app>.onrender.com/login                   # mot de passe = ADMIN_PASSWORD
 ```
 
 ## Notes
