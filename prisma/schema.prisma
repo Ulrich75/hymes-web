@@ -1,0 +1,59 @@
+// Schéma de la base hymes-web (Supabase / PostgreSQL)
+// Calqué sur HYMNES-/src/data/types.ts + métadonnées de synchro.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Collection {
+  id          String   @id
+  nom         String
+  langue      String
+  couleur     String
+  emoji       String
+  description String
+  hymns       Hymn[]
+
+  // Métadonnées de synchro
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft-delete : permet au mobile de savoir qu'une collection a disparu
+
+  @@index([updatedAt])
+}
+
+model Hymn {
+  id           String     @id
+  numero       Int
+  titre        String
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  auteur       String?
+
+  // Stockés en JSON pour coller exactement au payload attendu par le mobile
+  // (Verset[] et AudioInfo définis dans src/types/hymn.ts)
+  versets Json
+  audio   Json?
+
+  // Métadonnées de synchro
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft-delete pour la synchro incrémentale
+
+  @@index([collectionId])
+  @@index([updatedAt])
+}
+
+// Métadonnées globales de l'application (une seule ligne, id = 1).
+model AppMeta {
+  id               Int      @id @default(1)
+  dataVersion      Int      @default(1) // incrémenté à chaque écriture admin
+  latestAppVersion String? // dernière version de l'app mobile publiée
+  minAppVersion    String? // version minimale supportée (forçage de MAJ)
+  updateUrl        String? // lien store en cas de MAJ native
+  updatedAt        DateTime @updatedAt
+}
