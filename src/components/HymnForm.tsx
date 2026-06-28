@@ -19,9 +19,11 @@ export default function HymnForm({ mode, initial }: { mode: Mode; initial?: Hymn
   const router = useRouter();
 
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [existingHymns, setExistingHymns] = useState<Hymn[]>([]);
   const [id, setId] = useState(initial?.id ?? '');
   const [idTouched, setIdTouched] = useState(mode === 'edit');
   const [numero, setNumero] = useState<number>(initial?.numero ?? 1);
+  const [numeroTouched, setNumeroTouched] = useState(mode === 'edit');
   const [titre, setTitre] = useState(initial?.titre ?? '');
   const [collectionId, setCollectionId] = useState(initial?.collection_id ?? '');
   const [auteur, setAuteur] = useState(initial?.auteur ?? '');
@@ -39,7 +41,19 @@ export default function HymnForm({ mode, initial }: { mode: Mode; initial?: Hymn
 
   useEffect(() => {
     api.get<Collection[]>('/api/admin/collections').then(setCollections).catch(() => {});
-  }, []);
+    if (mode === 'new') {
+      api.get<Hymn[]>('/api/admin/hymns').then(setExistingHymns).catch(() => {});
+    }
+  }, [mode]);
+
+  // Auto-calcule le prochain numéro disponible quand la collection change.
+  useEffect(() => {
+    if (mode !== 'new' || numeroTouched || !collectionId) return;
+    const max = existingHymns
+      .filter((h) => h.collection_id === collectionId)
+      .reduce((acc, h) => Math.max(acc, h.numero), 0);
+    setNumero(max + 1);
+  }, [mode, numeroTouched, collectionId, existingHymns]);
 
   // Auto-génère l'id (collection-NNN) tant que l'utilisateur ne l'a pas modifié.
   useEffect(() => {
@@ -151,7 +165,10 @@ export default function HymnForm({ mode, initial }: { mode: Mode; initial?: Hymn
               type="number"
               min={1}
               value={numero}
-              onChange={(e) => setNumero(Number(e.target.value))}
+              onChange={(e) => {
+                setNumeroTouched(true);
+                setNumero(Number(e.target.value));
+              }}
             />
           </div>
           <div className="field">
