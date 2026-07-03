@@ -36,8 +36,85 @@ export default function HymnForm({ mode, initial }: { mode: Mode; initial?: Hymn
   const [audioOn, setAudioOn] = useState<boolean>(!!initial?.audio);
   const [audio, setAudio] = useState<AudioInfo>(initial?.audio ?? {});
 
+  type CheckState = { status: 'idle' | 'checking' | 'ok' | 'error'; message?: string };
+  const [audioChecks, setAudioChecks] = useState<Record<string, CheckState>>({});
+
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  async function testAudioUrl(field: keyof AudioInfo) {
+    const url = (audio[field] as string | undefined)?.trim();
+    if (!url) {
+      setAudioChecks((c) => ({ ...c, [field]: { status: 'error', message: 'Champ vide.' } }));
+      return;
+    }
+    setAudioChecks((c) => ({ ...c, [field]: { status: 'checking' } }));
+    try {
+      const res = await api.post<{ ok: boolean; status?: number; reason?: string; suspiciousType?: boolean }>(
+        '/api/admin/audio/validate',
+        { url },
+      );
+      if (res.ok) {
+        setAudioChecks((c) => ({
+          ...c,
+          [field]: {
+            status: 'ok',
+            message: res.suspiciousType
+              ? 'Joignable, mais le type de fichier ne semble pas être de l’audio.'
+              : 'Lien valide et joignable.',
+          },
+        }));
+      } else {
+        setAudioChecks((c) => ({ ...c, [field]: { status: 'error', message: res.reason ?? 'Lien injoignable.' } }));
+      }
+    } catch (err) {
+      setAudioChecks((c) => ({
+        ...c,
+        [field]: { status: 'error', message: err instanceof Error ? err.message : 'Échec du test.' },
+      }));
+    }
+  }
+
+  function renderAudioField(field: keyof AudioInfo, label: string, placeholder: string) {
+    const check = audioChecks[field];
+    return (
+      <div className="field" key={field}>
+        <label style={{ textTransform: 'capitalize' }}>{label}</label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <input
+            style={{ flex: 1 }}
+            value={(audio[field] as string | undefined) ?? ''}
+            onChange={(e) => {
+              setAudio({ ...audio, [field]: e.target.value });
+              setAudioChecks((c) => ({ ...c, [field]: { status: 'idle' } }));
+            }}
+            placeholder={placeholder}
+          />
+          <button
+            type="button"
+            className="btn secondary sm"
+            onClick={() => testAudioUrl(field)}
+            disabled={check?.status === 'checking'}
+            style={{ flex: 'unset', whiteSpace: 'nowrap' }}
+          >
+            {check?.status === 'checking' ? 'Test…' : 'Tester'}
+          </button>
+        </div>
+        {check && check.status !== 'idle' && check.status !== 'checking' && (
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 13,
+              color: check.status === 'ok' ? '#15803d' : '#b91c1c',
+            }}
+          >
+            {check.status === 'ok' ? '✓ ' : '✗ '}
+            {check.message}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   useEffect(() => {
     api.get<Collection[]>('/api/admin/collections').then(setCollections).catch(() => {});
@@ -280,24 +357,8 @@ export default function HymnForm({ mode, initial }: { mode: Mode; initial?: Hymn
                 />
               </div>
             </div>
-            {VOICES.map((voice) => (
-              <div className="field" key={voice}>
-                <label style={{ textTransform: 'capitalize' }}>{voice}</label>
-                <input
-                  value={audio[voice] ?? ''}
-                  onChange={(e) => setAudio({ ...audio, [voice]: e.target.value })}
-                  placeholder={`URL audio ${voice}`}
-                />
-              </div>
-            ))}
-            <div className="field">
-              <label>Mélodie complète</label>
-              <input
-                value={audio.full ?? ''}
-                onChange={(e) => setAudio({ ...audio, full: e.target.value })}
-                placeholder="URL audio (toutes voix)"
-              />
-            </div>
+            {VOICES.map((voice) => renderAudioField(voice, voice, `URL audio ${voice}`))}
+            {renderAudioField('full', 'Mélodie complète', 'URL audio (toutes voix)')}
           </>
         )}
       </div>
