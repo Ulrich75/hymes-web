@@ -4,11 +4,19 @@ import { ADMIN_COOKIE } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 // POST /api/admin/login { password } → pose un cookie de session httpOnly.
+//
+// Le mot de passe web est ADMIN_PASSWORD (saisi par l'humain).
+// Le cookie de session, lui, porte ADMIN_TOKEN (le jeton serveur que
+// /api/admin/* valide). Les deux sont donc découplés : ADMIN_TOKEN reste
+// réservé à l'API Bearer (mobile/scripts) et n'est jamais tapé à la main.
+// Repli : si ADMIN_PASSWORD n'est pas (encore) configuré, on accepte ADMIN_TOKEN
+// pour éviter tout verrouillage avant l'ajout de la variable.
 export async function POST(req: NextRequest) {
   const token = process.env.ADMIN_TOKEN;
   if (!token) {
     return NextResponse.json({ error: 'ADMIN_TOKEN non configuré côté serveur' }, { status: 500 });
   }
+  const expected = process.env.ADMIN_PASSWORD || token;
 
   let password = '';
   try {
@@ -18,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Requête invalide' }, { status: 400 });
   }
 
-  if (password !== token) {
+  if (password !== expected) {
     return NextResponse.json({ error: 'Mot de passe incorrect' }, { status: 401 });
   }
 

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { isAdminRequest } from '@/lib/auth';
 import { bumpDataVersion } from '@/lib/meta';
 import { toHymn } from '@/lib/serialize';
+import { AUDIO_VOICE_FIELDS, checkAudioUrl, isHttpUrl } from '@/lib/audio-url';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,18 +15,46 @@ const versetSchema = z.object({
   contenu: z.string(),
 });
 
+// Une URL audio : soit absente, soit une URL http(s) syntaxiquement valide.
+const audioUrl = z
+  .string()
+  .optional()
+  .refine((v) => !v || isHttpUrl(v), {
+    message: 'URL audio invalide (doit commencer par http:// ou https://).',
+  });
+
 const audioSchema = z
   .object({
-    soprano: z.string().optional(),
-    alto: z.string().optional(),
-    tenor: z.string().optional(),
-    bass: z.string().optional(),
-    full: z.string().optional(),
+    soprano: audioUrl,
+    alto: audioUrl,
+    tenor: audioUrl,
+    bass: audioUrl,
+    full: audioUrl,
     tempo: z.number().optional(),
     key: z.string().optional(),
     duration: z.number().optional(),
   })
   .optional();
+
+// Vérifie que chaque URL audio fournie est réellement joignable.
+// Renvoie un message d'erreur listant les voix en échec, ou null si tout est ok.
+async function validateAudioReachable(
+  audio: { [k: string]: unknown } | undefined,
+): Promise<string | null> {
+  if (!audio) return null;
+  const checks = await Promise.all(
+    AUDIO_VOICE_FIELDS.filter((f) => typeof audio[f] === 'string' && audio[f]).map(async (f) => {
+      const res = await checkAudioUrl(audio[f] as string);
+      return { field: f, res };
+    }),
+  );
+  const failures = checks.filter((c) => !c.res.ok);
+  if (failures.length === 0) return null;
+  return (
+    'Certains liens audio sont injoignables :\n' +
+    failures.map((c) => `• ${c.field} : ${c.res.reason ?? 'erreur inconnue'}`).join('\n')
+  );
+}
 
 const hymnSchema = z.object({
   id: z.string().min(1),
@@ -56,6 +85,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 });
   }
   const h = parsed.data;
+  const audioError = await validateAudioReachable(h.audio);
+  if (audioError) {
+    return NextResponse.json({ error: audioError }, { status: 400 });
+  }
   let created;
   try {
     created = await prisma.hymn.create({
@@ -87,6 +120,10 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 });
   }
   const h = parsed.data;
+  const audioError = await validateAudioReachable(h.audio);
+  if (audioError) {
+    return NextResponse.json({ error: audioError }, { status: 400 });
+  }
   const updated = await prisma.hymn.update({
     where: { id: h.id },
     data: {

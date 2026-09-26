@@ -1,11 +1,10 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,10 +17,11 @@ function LoginForm() {
     try {
       await api.post('/api/admin/login', { password });
       const next = params.get('next') || '/admin';
-      router.replace(next);
+      // Navigation « dure » : recharge la page pour que le middleware revoie
+      // le cookie fraîchement posé (évite le cache de redirection du routeur).
+      window.location.assign(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Échec de la connexion');
-    } finally {
       setLoading(false);
     }
   }
